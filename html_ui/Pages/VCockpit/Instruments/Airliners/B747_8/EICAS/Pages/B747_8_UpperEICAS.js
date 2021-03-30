@@ -13,6 +13,7 @@ var B747_8_UpperEICAS;
             this.allAntiIceStatus = new Array();
             this.gallonToMegagrams = 0;
             this.gallonToMegapounds = 0;
+            this.units;
         }
         get templateID() { return "B747_8UpperEICASTemplate"; }
         connectedCallback() {
@@ -53,6 +54,17 @@ var B747_8_UpperEICAS;
             this.isInitialised = true;
         }
         update(_deltaTime) {
+            const storedUnits = SaltyDataStore.get("OPTIONS_UNITS", "KG");
+            switch (storedUnits) {
+                case "KG":
+                    this.units = true;
+                    break;
+                case "LBS":
+                    this.units = false;
+                    break;
+                default:
+                    this.units = true;
+            }
             if (!this.isInitialised) {
                 return;
             }
@@ -89,20 +101,20 @@ var B747_8_UpperEICAS;
                 this.infoPanel.update(_deltaTime);
             }
             if (this.unitTextSVG) {
-                if (BaseAirliners.unitIsMetric(Aircraft.B747_8))
+                if (this.units)
                     this.unitTextSVG.textContent = "KGS X";
                 else
                     this.unitTextSVG.textContent = "LBS X";
             }
         }
         getGrossWeightInMegagrams() {
-            if (BaseAirliners.unitIsMetric(Aircraft.B747_8))
+            if (this.units)
                 return SimVar.GetSimVarValue("TOTAL WEIGHT", "kg") * 0.001;
             return SimVar.GetSimVarValue("TOTAL WEIGHT", "lbs") * 0.001;
         }
         getTotalFuelInMegagrams() {
             let factor = this.gallonToMegapounds;
-            if (BaseAirliners.unitIsMetric(Aircraft.B747_8))
+            if (this.units)
                 factor = this.gallonToMegagrams;
             return (SimVar.GetSimVarValue("FUEL TOTAL QUANTITY", "gallons") * factor);
         }
